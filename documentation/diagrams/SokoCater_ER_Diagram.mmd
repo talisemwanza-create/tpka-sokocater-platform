@@ -1,0 +1,142 @@
+
+erDiagram
+
+    USERS {
+        int id PK
+        string full_name
+        string email UK
+        string password_hash
+        string role
+        string phone_number
+        datetime created_at
+    }
+
+    CATERER_PROFILES {
+        int id PK
+        int user_id FK
+        string business_name
+        string description
+        string location
+        string contact_number
+        string business_image
+        string verification_status
+        datetime created_at
+    }
+
+    MENUS {
+        int id PK
+        int caterer_id FK
+        string menu_name
+        string description
+        datetime created_at
+    }
+
+    MENU_ITEMS {
+        int id PK
+        int menu_id FK
+        string item_name
+        string description
+        decimal price
+        string image_url
+    }
+
+    PACKAGES {
+        int id PK
+        int caterer_id FK
+        string package_name
+        string description
+        decimal price_per_guest
+        int minimum_guests
+        int maximum_guests
+    }
+
+    PACKAGE_ITEMS {
+        int id PK
+        int package_id FK
+        int menu_item_id FK
+    }
+
+    ADD_ONS {
+        int id PK
+        int caterer_id FK
+        string addon_name
+        string description
+        decimal price
+    }
+
+    BOOKINGS {
+        int id PK
+        int customer_id FK
+        int caterer_id FK
+        date event_date
+        string event_type
+        string event_location
+        int guest_count
+        decimal estimated_total
+        string status
+        datetime created_at
+    }
+
+    BOOKING_ITEMS {
+        int id PK
+        int booking_id FK
+        int package_id FK
+        int addon_id FK
+        int quantity
+        decimal unit_price
+    }
+
+    AVAILABILITY {
+        int id PK
+        int caterer_id FK
+        date available_date
+        string status
+    }
+
+    PAYMENTS {
+        int id PK
+        int booking_id FK
+        decimal amount
+        string payment_method
+        string transaction_reference
+        string payment_status
+        datetime paid_at
+    }
+
+    REVIEWS {
+        int id PK
+        int customer_id FK
+        int caterer_id FK
+        int booking_id FK
+        int rating
+        string comment
+        datetime created_at
+    }
+
+    NOTIFICATIONS {
+        int id PK
+        int user_id FK
+        string message
+        string notification_type
+        boolean is_read
+        datetime created_at
+    }
+
+    USERS ||--o| CATERER_PROFILES : owns
+    CATERER_PROFILES ||--o{ MENUS : creates
+    MENUS ||--o{ MENU_ITEMS : contains
+    CATERER_PROFILES ||--o{ PACKAGES : offers
+    PACKAGES ||--o{ PACKAGE_ITEMS : contains
+    MENU_ITEMS ||--o{ PACKAGE_ITEMS : included_in
+    CATERER_PROFILES ||--o{ ADD_ONS : provides
+    USERS ||--o{ BOOKINGS : makes
+    CATERER_PROFILES ||--o{ BOOKINGS : receives
+    BOOKINGS ||--o{ BOOKING_ITEMS : contains
+    PACKAGES ||--o{ BOOKING_ITEMS : selected_in
+    ADD_ONS ||--o{ BOOKING_ITEMS : selected_in
+    CATERER_PROFILES ||--o{ AVAILABILITY : manages
+    BOOKINGS ||--o{ PAYMENTS : has
+    USERS ||--o{ REVIEWS : writes
+    CATERER_PROFILES ||--o{ REVIEWS : receives
+    BOOKINGS ||--o| REVIEWS : receives
+    USERS ||--o{ NOTIFICATIONS : receives

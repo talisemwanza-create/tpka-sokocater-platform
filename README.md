@@ -92,7 +92,7 @@ Booking a caterer today is fragmented and time-consuming:
 | **Caterer** | As a caterer, I want to accept or decline booking requests so that I can manage my schedule. |
 | **Admin** | As an admin, I want to verify caterers so that customers can trust the platform. |
 
-> 📌 The full list of user stories, with acceptance criteria and priorities, is in [`docs/user-stories.md`](docs/user-stories.md) and tracked on our GitHub Projects board. *(https://github.com/users/talisemwanza-create/projects/3)*
+> 📌 The full list of user stories, with acceptance criteria and priorities, is in [`docs/user-stories.md`](docs/user-stories.md) and tracked on our GitHub Projects board. *(Add board link here)*
 
 ---
 
@@ -210,7 +210,12 @@ erDiagram
     BOOKINGS ||--o| REVIEWS : "gets"
 ```
 
-📄 **Full details** (all columns, data dictionary, and the normalization walkthrough) are in [`docs/database-design.md`](docs/database-design.md).
+📄 **Team schema documentation (source of truth):**
+- Schema: [`documentation/database/database_schema.md`](documentation/database/database_schema.md)
+- ER diagram: [`documentation/diagrams/SokoCater_ER_Diagram.mmd`](documentation/diagrams/SokoCater_ER_Diagram.mmd)
+- Database testing: [`documentation/testing/database_testing.md`](documentation/testing/database_testing.md)
+
+📄 Additional ERD overview, data dictionary and normalization walkthrough: [`docs/database-design.md`](docs/database-design.md).
 
 ---
 
@@ -227,8 +232,8 @@ erDiagram
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<https://github.com/SDF-FTH18M6-Capstones>/sokocater-platform.git
-cd sokocater-platform
+git clone https://github.com/talisemwanza-create/tpka-sokocater-platform.git
+cd tpka-sokocater-platform
 ```
 
 ### 2. Create the PostgreSQL database
@@ -440,7 +445,7 @@ Content-Type: application/json
 ## 📂 Project Structure
 
 ```
-sokocater-platform/
+tpka-sokocater-platform/
 ├── frontend/                  # React app
 │   ├── public/
 │   └── src/
@@ -492,10 +497,10 @@ SokoCater Platform is built by a team of four following **Agile / Scrum**.
 
 | Name | Role | GitHub |
 |------|------|--------|
-| **Talise** | Scrum Master, README & Documentation | [@talisemwanza-create](https://github.com/talisemwanza-create) |
-| **Praise** | Backend Developer (Flask API) | [@magomerepraise](https://github.com/codewithpraise-ai) |
-| **Kate** | Database Schema & Design | [KateCodes-dev](https://github.com/KateCodes-dev) |
-| **Allan** | UI/UX Wireframes & Frontend Developer (React) | [@allanmucheru](https://github.com/allanmucheru) |
+| **Talise** | Scrum Master, README & Documentation | [@username](https://github.com/username) |
+| **Praise** | Backend Developer (Flask API) | [@username](https://github.com/username) |
+| **Kate** | Database Schema & Design | [@username](https://github.com/username) |
+| **Allan** | UI/UX Wireframes & Frontend Developer (React) | [@username](https://github.com/username) |
 
 **Workflow**
 - Work is tracked as GitHub Issues on a GitHub Projects board (To Do / In Progress / Done) and organized into sprints.
