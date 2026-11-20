@@ -1,7 +1,18 @@
-.venv/
+# Python
 __pycache__/
 *.pyc
-instance/*.db
+
+# Database
+instance/
+*.db
+
+# Environment variables
 .env
 
-
+# Virtual environments
+.venv/
+venv/
+backend/.venv/
+backend/venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,69 @@
+erDiagram
+    MENUS {
+        integer id PK
+        integer caterer_id FK
+        text name
+        text description
+        decimal price
+        timestamp created_at
+    }
+    ORDERS {
+        integer id PK
+        integer user_id FK
+        integer caterer_id FK
+        integer menu_id FK
+        integer quantity
+        decimal unit_price
+        decimal total_amount
+        text status
+        timestamp order_date
+    }
+    CATERERS {
+        integer id PK
+        integer user_id FK
+        text business_name
+        text location
+        text description
+        text contact_number
+        timestamp created_at
+    }
+    BOOKINGS {
+        integer id PK
+        integer user_id FK
+        integer caterer_id FK
+        integer package_id FK
+        text event_type
+        date event_date
+        text event_location
+        integer guest_count
+        decimal price_per_person
+        decimal estimated_total
+        text status
+        timestamp created_at
+    }
+    USERS {
+        integer id PK
+        text full_name
+        text email UK
+        text password_hash
+        text phone
+        text role
+        timestamp created_at
+    }
+    PACKAGES {
+        integer id PK
+        integer caterer_id FK
+        text name
+        text category
+        text description
+        timestamp created_at
+    }
+    USERS ||--o{ BOOKINGS : ""
+    CATERERS ||--o{ MENUS : ""
+    CATERERS ||--o{ ORDERS : ""
+    USERS ||--o| CATERERS : ""
+    MENUS ||--o{ ORDERS : ""
+    CATERERS ||--o{ BOOKINGS : ""
+    USERS ||--o{ ORDERS : ""
+    CATERERS ||--o{ PACKAGES : ""
+    PACKAGES ||--o{ BOOKINGS : ""

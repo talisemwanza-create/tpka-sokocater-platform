@@ -1,5 +1,5 @@
 
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 from werkzeug.security import generate_password_hash
@@ -7,21 +7,7 @@ from werkzeug.security import generate_password_hash
 from app import create_app
 from extensions import db
 
-from models import (
-    User,
-    CatererProfile,
-    Menu,
-    MenuItem,
-    Package,
-    PackageItem,
-    AddOn,
-    Booking,
-    BookingItem,
-    Availability,
-    Payment,
-    Review,
-    Notification
-)
+from models import User, Caterer, Menu, Package, Booking, Order
 
 
 # ============================================================
@@ -31,9 +17,7 @@ from models import (
 def get_or_create(model, lookup, defaults=None):
     """
     Find an existing record or create a new one.
-
-    Prevents duplicate seed records when the script
-    is executed multiple times.
+    Prevents duplicate sample records when the script is rerun.
     """
 
     record = db.session.query(model).filter_by(**lookup).first()
@@ -71,7 +55,7 @@ def seed_users():
             "full_name": "SokoCater Admin",
             "password_hash": sample_password,
             "role": "admin",
-            "phone_number": "0711000001"
+            "phone": "0711000001"
         }
     )
 
@@ -82,7 +66,7 @@ def seed_users():
             "full_name": "Jane Wanjiku",
             "password_hash": sample_password,
             "role": "customer",
-            "phone_number": "0711000002"
+            "phone": "0711000002"
         }
     )
 
@@ -93,7 +77,7 @@ def seed_users():
             "full_name": "Brian Otieno",
             "password_hash": sample_password,
             "role": "customer",
-            "phone_number": "0711000003"
+            "phone": "0711000003"
         }
     )
 
@@ -104,7 +88,7 @@ def seed_users():
             "full_name": "Mary Njeri",
             "password_hash": sample_password,
             "role": "caterer",
-            "phone_number": "0711000004"
+            "phone": "0711000004"
         }
     )
 
@@ -115,7 +99,7 @@ def seed_users():
             "full_name": "David Mwangi",
             "password_hash": sample_password,
             "role": "caterer",
-            "phone_number": "0711000005"
+            "phone": "0711000005"
         }
     )
 
@@ -129,36 +113,32 @@ def seed_users():
 
 
 # ============================================================
-# SEED CATERER PROFILES
+# SEED CATERERS
 # ============================================================
 
 def seed_caterers(users):
 
-    print("Seeding caterer profiles...")
+    print("Seeding caterers...")
 
     caterer_one = get_or_create(
-        CatererProfile,
+        Caterer,
         {"user_id": users["caterer_user_one"].id},
         {
             "business_name": "Green Plate Catering",
             "description": "Fresh and delicious catering for weddings and events.",
             "location": "Nairobi",
-            "contact_number": "0711222333",
-            "business_image": None,
-            "verification_status": "verified"
+            "contact_number": "0711222333"
         }
     )
 
     caterer_two = get_or_create(
-        CatererProfile,
+        Caterer,
         {"user_id": users["caterer_user_two"].id},
         {
             "business_name": "Taste Hub Events",
             "description": "Professional catering for corporate and private events.",
             "location": "Kiambu",
-            "contact_number": "0722333444",
-            "business_image": None,
-            "verification_status": "verified"
+            "contact_number": "0722333444"
         }
     )
 
@@ -180,10 +160,11 @@ def seed_menus(caterers):
         Menu,
         {
             "caterer_id": caterers["caterer_one"].id,
-            "menu_name": "Wedding Menu"
+            "name": "Wedding Menu"
         },
         {
-            "description": "A selection of meals suitable for weddings."
+            "description": "A selection of meals suitable for weddings.",
+            "price": Decimal("1500.00")
         }
     )
 
@@ -191,84 +172,17 @@ def seed_menus(caterers):
         Menu,
         {
             "caterer_id": caterers["caterer_two"].id,
-            "menu_name": "Corporate Menu"
+            "name": "Corporate Menu"
         },
         {
-            "description": "Professional catering options for corporate events."
+            "description": "Professional catering options for corporate events.",
+            "price": Decimal("1200.00")
         }
     )
 
     return {
         "menu_one": menu_one,
         "menu_two": menu_two
-    }
-
-
-# ============================================================
-# SEED MENU ITEMS
-# ============================================================
-
-def seed_menu_items(menus):
-
-    print("Seeding menu items...")
-
-    pilau = get_or_create(
-        MenuItem,
-        {
-            "menu_id": menus["menu_one"].id,
-            "item_name": "Chicken Pilau"
-        },
-        {
-            "description": "Kenyan spiced rice served with chicken.",
-            "price": Decimal("350.00"),
-            "image_url": None
-        }
-    )
-
-    chapati = get_or_create(
-        MenuItem,
-        {
-            "menu_id": menus["menu_one"].id,
-            "item_name": "Chapati"
-        },
-        {
-            "description": "Freshly prepared Kenyan chapati.",
-            "price": Decimal("50.00"),
-            "image_url": None
-        }
-    )
-
-    vegetables = get_or_create(
-        MenuItem,
-        {
-            "menu_id": menus["menu_two"].id,
-            "item_name": "Vegetable Rice"
-        },
-        {
-            "description": "Seasoned rice served with fresh vegetables.",
-            "price": Decimal("250.00"),
-            "image_url": None
-        }
-    )
-
-    chicken = get_or_create(
-        MenuItem,
-        {
-            "menu_id": menus["menu_two"].id,
-            "item_name": "Grilled Chicken"
-        },
-        {
-            "description": "Grilled chicken with herbs and spices.",
-            "price": Decimal("400.00"),
-            "image_url": None
-        }
-    )
-
-    return {
-        "pilau": pilau,
-        "chapati": chapati,
-        "vegetables": vegetables,
-        "chicken": chicken
     }
 
 
@@ -284,13 +198,11 @@ def seed_packages(caterers):
         Package,
         {
             "caterer_id": caterers["caterer_one"].id,
-            "package_name": "Classic Wedding Package"
+            "name": "Classic Wedding Package"
         },
         {
-            "description": "A complete wedding catering package.",
-            "price_per_guest": Decimal("1500.00"),
-            "minimum_guests": 20,
-            "maximum_guests": 200
+            "category": "Wedding Catering",
+            "description": "A complete wedding catering package."
         }
     )
 
@@ -298,13 +210,11 @@ def seed_packages(caterers):
         Package,
         {
             "caterer_id": caterers["caterer_two"].id,
-            "package_name": "Corporate Lunch Package"
+            "name": "Corporate Lunch Package"
         },
         {
-            "description": "A convenient package for corporate events.",
-            "price_per_guest": Decimal("1200.00"),
-            "minimum_guests": 10,
-            "maximum_guests": 150
+            "category": "Corporate Events",
+            "description": "A convenient package for corporate events."
         }
     )
 
@@ -315,103 +225,26 @@ def seed_packages(caterers):
 
 
 # ============================================================
-# SEED PACKAGE ITEMS
-# ============================================================
-
-def seed_package_items(packages, menu_items):
-
-    print("Seeding package items...")
-
-    get_or_create(
-        PackageItem,
-        {
-            "package_id": packages["package_one"].id,
-            "menu_item_id": menu_items["pilau"].id
-        }
-    )
-
-    get_or_create(
-        PackageItem,
-        {
-            "package_id": packages["package_one"].id,
-            "menu_item_id": menu_items["chapati"].id
-        }
-    )
-
-    get_or_create(
-        PackageItem,
-        {
-            "package_id": packages["package_two"].id,
-            "menu_item_id": menu_items["vegetables"].id
-        }
-    )
-
-    get_or_create(
-        PackageItem,
-        {
-            "package_id": packages["package_two"].id,
-            "menu_item_id": menu_items["chicken"].id
-        }
-    )
-
-
-# ============================================================
-# SEED ADD-ONS
-# ============================================================
-
-def seed_addons(caterers):
-
-    print("Seeding add-ons...")
-
-    addon_one = get_or_create(
-        AddOn,
-        {
-            "caterer_id": caterers["caterer_one"].id,
-            "addon_name": "Fresh Juice Service"
-        },
-        {
-            "description": "Fresh juice served to event guests.",
-            "price": Decimal("5000.00")
-        }
-    )
-
-    addon_two = get_or_create(
-        AddOn,
-        {
-            "caterer_id": caterers["caterer_two"].id,
-            "addon_name": "Waiter Service"
-        },
-        {
-            "description": "Professional waiter service for events.",
-            "price": Decimal("8000.00")
-        }
-    )
-
-    return {
-        "addon_one": addon_one,
-        "addon_two": addon_two
-    }
-
-
-# ============================================================
 # SEED BOOKINGS
 # ============================================================
 
-def seed_bookings(users, caterers):
+def seed_bookings(users, caterers, packages):
 
     print("Seeding bookings...")
 
     booking_one = get_or_create(
         Booking,
         {
-            "customer_id": users["customer_one"].id,
+            "user_id": users["customer_one"].id,
             "caterer_id": caterers["caterer_one"].id,
+            "package_id": packages["package_one"].id,
             "event_date": date.today() + timedelta(days=30),
             "event_type": "Wedding"
         },
         {
             "event_location": "Nairobi",
             "guest_count": 80,
+            "price_per_person": Decimal("1500.00"),
             "estimated_total": Decimal("120000.00"),
             "status": "pending"
         }
@@ -420,16 +253,18 @@ def seed_bookings(users, caterers):
     booking_two = get_or_create(
         Booking,
         {
-            "customer_id": users["customer_two"].id,
+            "user_id": users["customer_two"].id,
             "caterer_id": caterers["caterer_two"].id,
-            "event_date": date.today() - timedelta(days=30),
+            "package_id": packages["package_two"].id,
+            "event_date": date.today() + timedelta(days=60),
             "event_type": "Corporate Event"
         },
         {
             "event_location": "Kiambu",
             "guest_count": 50,
-            "estimated_total": Decimal("68000.00"),
-            "status": "completed"
+            "price_per_person": Decimal("1200.00"),
+            "estimated_total": Decimal("60000.00"),
+            "status": "confirmed"
         }
     )
 
@@ -440,197 +275,49 @@ def seed_bookings(users, caterers):
 
 
 # ============================================================
-# SEED BOOKING ITEMS
+# SEED ORDERS
 # ============================================================
 
-def seed_booking_items(bookings, packages, addons):
+def seed_orders(users, caterers, menus):
 
-    print("Seeding booking items...")
+    print("Seeding orders...")
 
-    get_or_create(
-        BookingItem,
-        {
-            "booking_id": bookings["booking_one"].id,
-            "package_id": packages["package_one"].id,
-            "addon_id": None
-        },
-        {
-            "quantity": 80,
-            "unit_price": Decimal("1500.00")
-        }
-    )
-
-    get_or_create(
-        BookingItem,
-        {
-            "booking_id": bookings["booking_two"].id,
-            "package_id": packages["package_two"].id,
-            "addon_id": None
-        },
-        {
-            "quantity": 50,
-            "unit_price": Decimal("1200.00")
-        }
-    )
-
-    get_or_create(
-        BookingItem,
-        {
-            "booking_id": bookings["booking_two"].id,
-            "package_id": None,
-            "addon_id": addons["addon_two"].id
-        },
-        {
-            "quantity": 1,
-            "unit_price": Decimal("8000.00")
-        }
-    )
-
-
-# ============================================================
-# SEED AVAILABILITY
-# ============================================================
-
-def seed_availability(caterers):
-
-    print("Seeding availability...")
-
-    get_or_create(
-        Availability,
-        {
-            "caterer_id": caterers["caterer_one"].id,
-            "available_date": date.today() + timedelta(days=30)
-        },
-        {
-            "status": "booked"
-        }
-    )
-
-    get_or_create(
-        Availability,
-        {
-            "caterer_id": caterers["caterer_one"].id,
-            "available_date": date.today() + timedelta(days=31)
-        },
-        {
-            "status": "available"
-        }
-    )
-
-    get_or_create(
-        Availability,
-        {
-            "caterer_id": caterers["caterer_two"].id,
-            "available_date": date.today() + timedelta(days=30)
-        },
-        {
-            "status": "available"
-        }
-    )
-
-
-# ============================================================
-# SEED PAYMENTS
-# ============================================================
-
-def seed_payments(bookings):
-
-    print("Seeding payments...")
-
-    get_or_create(
-        Payment,
-        {
-            "transaction_reference": "SEED-PAYMENT-001"
-        },
-        {
-            "booking_id": bookings["booking_one"].id,
-            "amount": Decimal("120000.00"),
-            "payment_method": "M-Pesa",
-            "payment_status": "pending",
-            "paid_at": None
-        }
-    )
-
-    get_or_create(
-        Payment,
-        {
-            "transaction_reference": "SEED-PAYMENT-002"
-        },
-        {
-            "booking_id": bookings["booking_two"].id,
-            "amount": Decimal("68000.00"),
-            "payment_method": "M-Pesa",
-            "payment_status": "successful",
-            "paid_at": datetime.utcnow()
-        }
-    )
-
-
-# ============================================================
-# SEED REVIEWS
-# ============================================================
-
-def seed_reviews(users, caterers, bookings):
-
-    print("Seeding reviews...")
-
-    get_or_create(
-        Review,
-        {
-            "booking_id": bookings["booking_two"].id
-        },
-        {
-            "customer_id": users["customer_two"].id,
-            "caterer_id": caterers["caterer_two"].id,
-            "rating": 5,
-            "comment": "Excellent catering service. The food was delicious!"
-        }
-    )
-
-
-# ============================================================
-# SEED NOTIFICATIONS
-# ============================================================
-
-def seed_notifications(users):
-
-    print("Seeding notifications...")
-
-    get_or_create(
-        Notification,
+    order_one = get_or_create(
+        Order,
         {
             "user_id": users["customer_one"].id,
-            "message": "Your wedding booking request has been submitted.",
-            "notification_type": "booking"
+            "caterer_id": caterers["caterer_one"].id,
+            "menu_id": menus["menu_one"].id
         },
         {
-            "is_read": False
+            "quantity": 2,
+            "unit_price": Decimal("1500.00"),
+            "total_amount": Decimal("3000.00"),
+            "status": "pending",
+            "order_date": datetime.now(UTC)
         }
     )
 
-    get_or_create(
-        Notification,
-        {
-            "user_id": users["caterer_user_one"].id,
-            "message": "You have received a new booking request.",
-            "notification_type": "booking"
-        },
-        {
-            "is_read": False
-        }
-    )
-
-    get_or_create(
-        Notification,
+    order_two = get_or_create(
+        Order,
         {
             "user_id": users["customer_two"].id,
-            "message": "Your corporate event booking has been completed.",
-            "notification_type": "booking"
+            "caterer_id": caterers["caterer_two"].id,
+            "menu_id": menus["menu_two"].id
         },
         {
-            "is_read": True
+            "quantity": 3,
+            "unit_price": Decimal("1200.00"),
+            "total_amount": Decimal("3600.00"),
+            "status": "pending",
+            "order_date": datetime.now(UTC)
         }
     )
+
+    return {
+        "order_one": order_one,
+        "order_two": order_two
+    }
 
 
 # ============================================================
@@ -642,38 +329,22 @@ def seed_database():
     print("\nStarting SokoCater database seeding...\n")
 
     try:
+        # Seed records in foreign-key dependency order.
+        # Database tables must already exist and match the models.
 
-        # Create missing tables without deleting existing data
-        db.create_all()
-
-        # Seed records in foreign-key dependency order
         users = seed_users()
 
         caterers = seed_caterers(users)
 
         menus = seed_menus(caterers)
 
-        menu_items = seed_menu_items(menus)
-
         packages = seed_packages(caterers)
 
-        seed_package_items(packages, menu_items)
+        bookings = seed_bookings(users, caterers, packages)
 
-        addons = seed_addons(caterers)
+        orders = seed_orders(users, caterers, menus)
 
-        bookings = seed_bookings(users, caterers)
-
-        seed_booking_items(bookings, packages, addons)
-
-        seed_availability(caterers)
-
-        seed_payments(bookings)
-
-        seed_reviews(users, caterers, bookings)
-
-        seed_notifications(users)
-
-        # Save all changes
+        # Save all changes.
         db.session.commit()
 
         print("\n========================================")
@@ -690,7 +361,6 @@ def seed_database():
 
     except Exception as error:
 
-        # Undo changes if anything goes wrong
         db.session.rollback()
 
         print("\nDatabase seeding failed!")

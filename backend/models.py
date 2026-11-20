@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import CheckConstraint, UniqueConstraint
 
@@ -19,7 +19,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     phone_number = db.Column(db.String(20))
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         CheckConstraint(
@@ -75,7 +75,7 @@ class CatererProfile(db.Model):
     contact_number = db.Column(db.String(20))
     business_image = db.Column(db.String(255))
     verification_status = db.Column(db.String(20), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     user = db.relationship(
         "User",
@@ -130,7 +130,7 @@ class Menu(db.Model):
 
     menu_name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     caterer = db.relationship(
         "CatererProfile",
@@ -331,7 +331,7 @@ class Booking(db.Model):
     guest_count = db.Column(db.Integer, nullable=False)
     estimated_total = db.Column(db.Numeric(10, 2), nullable=False)
     status = db.Column(db.String(20), nullable=False, default="pending")
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         CheckConstraint(
@@ -548,7 +548,7 @@ class Review(db.Model):
 
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     __table_args__ = (
         CheckConstraint(
@@ -591,10 +591,14 @@ class Notification(db.Model):
     message = db.Column(db.Text, nullable=False)
     notification_type = db.Column(db.String(50), nullable=False)
     is_read = db.Column(db.Boolean, nullable=False, default=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     user = db.relationship(
         "User",
         back_populates="notifications"
     )
+
+
+# Backward-compatible name used by existing routes
+Caterer = CatererProfile
 
