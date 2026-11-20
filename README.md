@@ -282,10 +282,10 @@ The API will be available at `http://localhost:5000`. Confirm it's running by vi
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
-The app will be available at `http://localhost:3000`.
+The app will be available at `http://localhost:5173`.
 
 ### 5. Try the access levels
 
@@ -312,7 +312,7 @@ SECRET_KEY=your-secret-key
 JWT_SECRET_KEY=your-jwt-secret
 JWT_ACCESS_TOKEN_EXPIRES_HOURS=1
 DATABASE_URL=postgresql://sokocater_user:your-password@localhost:5432/sokocater
-CORS_ORIGINS=http://localhost:3000
+CORS_ORIGINS=http://localhost:5173
 ```
 
 > ⚠️ Never commit your `.env` file. Commit a `.env.example` with placeholder values instead.
